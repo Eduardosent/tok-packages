@@ -16,6 +16,12 @@ use_environment = "testnet"
 manifest_digest = "7AFB66695545775FBFBB2D3078ADFD084244D5002392E837FDE21D9EA1C6D01C"
 deps = { MoveStdlib = "MoveStdlib" }
 
+[pinned.testnet.mycoin]
+source = { root = true }
+use_environment = "testnet"
+manifest_digest = "C766DFFCB7A7D3DF8C8F25B564ADFEA5EB7B1F0782DA98E846268DB8007AD402"
+deps = { std = "MoveStdlib", sui = "Sui", tok_issuer = "tok_issuer" }
+
 [pinned.testnet.tok_fees]
 source = { local = "../tok_fees" }
 use_environment = "testnet"
@@ -23,7 +29,7 @@ manifest_digest = "5745706258F61D6CE210904B3E6AE87A73CE9D31A6F93BE4718C442529332
 deps = { std = "MoveStdlib", sui = "Sui" }
 
 [pinned.testnet.tok_issuer]
-source = { root = true }
+source = { local = "../tok_issuer" }
 use_environment = "testnet"
 manifest_digest = "F730E108E20BA0D1CB709D53100847931EF7CE911E89322870105957F25E1451"
 deps = { std = "MoveStdlib", sui = "Sui", tok_fees = "tok_fees" }

@@ -1,0 +1,39 @@
+{
+  "network": "testnet",
+  "packageId": "0x0dd0bdbbaaaa586888cad11a9a1158f3e303367578dccd969bf3054fa187c4be",
+  "sender": "0x6b5ca4eecb6ee987e6eefc760cc5b59493c4258390d514999d26405e1b6b6d3e",
+  "objects": {
+    "issuerVault": "0x0e24c5622ba8e3e0c312ce529ed848a11f81dcd3b3f5689a9624c0bb7fd39733",
+    "upgradeCap": "0xc85199d79198fc2cefd488ddcd0a71d13371985bd2dc9b0902765db1a914e606"
+  },
+  "digest": "HzxpNdC9Xgb37wNWw3NE9ynfDC5hFZKw1CC3x2FDp6su",
+  "deployment": {
+    "costMist": "20,040,280 MIST",
+    "costSui": "0.020040 SUI",
+    "costUsd": "$0.018036"
+  },
+  "mint": {
+    "costSui": "0.002380 SUI"
+  },
+  "redeemVault": {
+    "computationFeeMist": "1,000,000 MIST",
+    "storageFeeMist": "7,501,200 MIST",
+    "storageRebateMist": "7,117,704 MIST",
+    "netCostMist": "1,383,496 MIST",
+    "netCostSui": "0.001383 SUI",
+    "netCostUsd": "$0.001245",
+    "rebateEfficiency": "94.88%"
+  },
+  "protocolFee": {
+    "tokFeeSui": "0.010000 SUI"
+  },
+  "totalLifecycle": {
+    "totalThreeOpsSui": "0.023803 SUI",
+    "totalWithProtocolFeeSui": "0.033803 SUI",
+    "totalUsd": "$0.030422"
+  },
+  "marketReference": {
+    "suiPrice": "$0.90",
+    "date": "2026-04-01"
+  }
+}

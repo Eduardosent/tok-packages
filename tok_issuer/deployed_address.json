@@ -1,9 +1,9 @@
 {
   "project": "TOK_ISSUER",
   "network": "testnet",
-  "packageId": "0x2320e302f482915a7cd170f01e55583f4ac4078b76ed501fe337c430e025a97c",
-  "upgradeCapId": "0xad76e19155cb21ca11cd84afd3a8a871d8f42fb61f901d119060fb494179c6d3",
-  "transactionDigest": "8SZVjX3RAskxVcr6YPyRJ5JVQRq1J1Y4gfF9srYe25VP",
+  "packageId": "0x599e4193987d894aa2444cf7df0500c01cba23f738a614673a65d012066ec4f0",
+  "upgradeCapId": "0x53b59cf8a597c5aa45f2f42e73de45f54690b5aa0425da006c0450fad3e3b92c",
+  "transactionDigest": "HYXj8ztzMT5zAsu21c1WrpfHLyU3dnc5WiT7LA5SLxnW",
   "deployer": "0x6b5ca4eecb6ee987e6eefc760cc5b59493c4258390d514999d26405e1b6b6d3e",
   "gasUsed": {
     "total_sui": 0.02520828,
@@ -13,7 +13,6 @@
   },
   "timestamp": "2026-04-05T20:00:22Z",
   "modules": [
-    "token",
     "with_otw"
   ]
 }

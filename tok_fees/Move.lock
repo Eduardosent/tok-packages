@@ -17,13 +17,7 @@ manifest_digest = "7AFB66695545775FBFBB2D3078ADFD084244D5002392E837FDE21D9EA1C6D
 deps = { MoveStdlib = "MoveStdlib" }
 
 [pinned.testnet.tok_fees]
-source = { local = "../tok_fees" }
+source = { root = true }
 use_environment = "testnet"
 manifest_digest = "5745706258F61D6CE210904B3E6AE87A73CE9D31A6F93BE4718C442529332A87"
 deps = { std = "MoveStdlib", sui = "Sui" }
-
-[pinned.testnet.tok_issuer]
-source = { root = true }
-use_environment = "testnet"
-manifest_digest = "F730E108E20BA0D1CB709D53100847931EF7CE911E89322870105957F25E1451"
-deps = { std = "MoveStdlib", sui = "Sui", tok_fees = "tok_fees" }

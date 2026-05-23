@@ -1,10 +1,9 @@
 {
-  "package": "0x646080b3b6200381bfde35315fabbcceb2580ec9f0596a37b586dce8c3e9349f",
-  "global_treasury": "0xfff40ee4689a628e4b1806adf24495245a6901064512848184c7a6cf99ea9962",
-  "admin_cap": "0x3bdc4ed74bfa2444b40b19bdc03c886310c9d8613445f543e85e7cec1b463251",
-  "upgrade_cap": "0x1e07aefc0680982f46c6327712ab078f5cdbd1dc3d713c215c2325614d2e6e84",
-  "lending_fee_obj": "0x4f3731a42b8adc92d73c643a6d7cbee99021684809a6f2d37af67fcc1d492b99",
-  "issuer_fee_obj": "0xa9ea83c47a202578d0f252fa6fd2506441a5940cd7cf66d06b0c17cf0ea4cb2c",
+  "package": "0x21dee5942c2b9198f46c846bd16c854c2d0f4b7bb13a2efb66172ac71deb40e6",
+  "global_treasury": "0x588eb27f5a886af3f62a845d99344b1b332d604289206f71eab1e764a72c45c2",
+  "admin_cap": "0xfc1fc2c7477419ff26e4b7cd3f741a7be359b61b45f38aa8246e04b7a7439da3",
+  "upgrade_cap": "0xf50216e28b27b2eda95dffadc552cb1429b5c956dee5cb1b74af9f91f942400a",
+  "issuer_fee_obj": "0xc7ad3d5ff0bdf2f9f29271716a4a367d6010698a9d98099ac0ffa5231730846e",
   "deployment_cost": {
     "total_mist": 35316280,
     "total_sui": 0.03531628,

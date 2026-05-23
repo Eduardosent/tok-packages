@@ -7,7 +7,7 @@ module tok_issuer::with_otw {
     use sui::transfer::Receiving;
 
     // === Constants ===
-    const ISSUER_FEE_ID: address = @0xa9ea83c47a202578d0f252fa6fd2506441a5940cd7cf66d06b0c17cf0ea4cb2c;
+    const ISSUER_FEE_ID: address = @0xc7ad3d5ff0bdf2f9f29271716a4a367d6010698a9d98099ac0ffa5231730846e;
 
     // === Errors ===
     const EInvalidFeeObject: u64 = 0;

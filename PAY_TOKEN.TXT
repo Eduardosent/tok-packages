@@ -1,0 +1,13 @@
+sui payment:0xf343299027ecd50b0f906bb150ee6ef95680b38764727d5f3d080ee59a54eeea
+
+sui client call \
+    --package 0x0dd0bdbbaaaa586888cad11a9a1158f3e303367578dccd969bf3054fa187c4be \
+    --module with_otw \
+    --function pay_token \
+    --args \
+        0xc7ad3d5ff0bdf2f9f29271716a4a367d6010698a9d98099ac0ffa5231730846e \
+        0xf343299027ecd50b0f906bb150ee6ef95680b38764727d5f3d080ee59a54eeea \
+        <ID_DE_REGISTRY> \
+        <ID_DE_CURRENCY_RECEIVING> \
+        0x0e24c5622ba8e3e0c312ce529ed848a11f81dcd3b3f5689a9624c0bb7fd39733 \
+    --gas-budget 5000000

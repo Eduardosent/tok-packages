@@ -17,8 +17,8 @@ tok_fees = { local = "../tok_fees" }
 # Override = { local = "../conflicting/version", override = true }
 
 [addresses]
-tok_issuer = "0xfa0cdac0527acc3956417c84bff125d14d8492a52e7ac7b190d7c447dcc0d264"
-tok_fees = "0x646080b3b6200381bfde35315fabbcceb2580ec9f0596a37b586dce8c3e9349f"
+tok_issuer = "0x0"
+tok_fees = "0x21dee5942c2b9198f46c846bd16c854c2d0f4b7bb13a2efb66172ac71deb40e6"
 
 # Named addresses will be accessible in Move as `@name`. They're also exported:
 # for example, `std = "0x1"` is exported by the Standard Library.
