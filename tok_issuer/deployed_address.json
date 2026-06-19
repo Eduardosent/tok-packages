@@ -1,18 +1,21 @@
 {
   "project": "TOK_ISSUER",
   "network": "testnet",
-  "packageId": "0x599e4193987d894aa2444cf7df0500c01cba23f738a614673a65d012066ec4f0",
-  "upgradeCapId": "0x53b59cf8a597c5aa45f2f42e73de45f54690b5aa0425da006c0450fad3e3b92c",
-  "transactionDigest": "HYXj8ztzMT5zAsu21c1WrpfHLyU3dnc5WiT7LA5SLxnW",
+  "packageId": "0x88288ba5d35289a4410ec0b93c0aae251724b5eab8df81743c44143c72ccbdd4",
+  "upgradeCapId": "0xc948dc16633fd8dc43f5eaee870679ae5e021b89560f302badfc9cf3de4b02c8",
+  "transactionDigest": "5VxuEMkVf7Ca5uw4HsRgD939QqNFjunmmD8LxYDjoXSB",
   "deployer": "0x6b5ca4eecb6ee987e6eefc760cc5b59493c4258390d514999d26405e1b6b6d3e",
   "gasUsed": {
-    "total_sui": 0.02520828,
-    "total_mist": 25208280,
+    "total_sui": 0.01694708,
+    "total_mist": 16947080,
     "computation": 1000000,
-    "storage_net": 24208280
+    "storage_net": 15947080
   },
   "timestamp": "2026-04-05T20:00:22Z",
   "modules": [
     "with_otw"
-  ]
+  ],
+  "dependencies": {
+    "tok_fees": "0x05029a11fbcfa5d6959a41cce21681a65ecfbb5ee57967e2626272f188c8b653"
+  }
 }

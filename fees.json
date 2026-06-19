@@ -1,0 +1,20 @@
+{
+  "fees": [
+    {
+      "name": "issuer_fee",
+      "fee_object_id": "0xa3e9aefb95094464973a54ff47d3a20a383cf6526332800a737928c841ca615c",
+      "fee_type": "MultiTokenFee",
+      "admin_cap_id": "0x1e33b818a89966da1846b16efacc4ec44ee259d3a95416bddae2d7706e2fc42e",
+      "accepted_tokens": [
+        {
+          "token_type": "0x2::sui::SUI",
+          "price": 100000000,
+          "price_sui": "0.1 SUI"
+        }
+      ],
+      "recipient": "0x6b5ca4eecb6ee987e6eefc760cc5b59493c4258390d514999d26405e1b6b6d3e",
+      "active": true,
+      "lock_period": 0
+    }
+  ]
+}

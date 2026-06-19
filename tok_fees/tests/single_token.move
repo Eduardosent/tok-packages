@@ -1,133 +1,400 @@
-// #[test_only]
-// module tok_fees::single_token_tests {
-//     use sui::test_scenario::{Self};
-//     use sui::coin;
-//     use sui::sui::SUI;
-//     use tok_fees::config::{Self, GlobalTreasury};
-//     use tok_fees::single_token::{Self, SingleTokenFee};
+#[test_only]
+module tok_fees::single_token_tests {
+    use sui::test_scenario;
+    use sui::clock;
+    use sui::coin;
+    use sui::sui::SUI;
+    use tok_fees::config::{Self, GlobalTreasury, FeeAdminCap};
+    use tok_fees::single_token::{Self, SingleTokenFee};
 
-//     // Direcciones de prueba
-//     const ADMIN: address = @0xAD;
-//     const USER: address = @0x8008;
-//     const RECIPIENT: address = @0xFEED;
+    // === Constants ===
+    const ADMIN: address = @0xAD;
+    const USER: address = @0xB;
+    const RECIPIENT: address = @0xC;
+    const NEW_RECIPIENT: address = @0xD;
+    const PRICE: u64 = 500_000_000;
+    const NEW_PRICE: u64 = 1_000_000_000;
+    const LOCK_PERIOD: u64 = 86_400_000;
+    const CREATION_FEE: u64 = 10_000_000;
 
-//     // Un token de prueba cualquiera
-//     public struct COBITO has drop {}
+    // === Helpers ===
 
-//     #[test]
-//     fun test_create_fee_success() {
-//         let mut scenario = test_scenario::begin(ADMIN);
-//         config::init_for_testing(test_scenario::ctx(&mut scenario));
+    /// Initializes GlobalTreasury and creates a SingleTokenFee<SUI> owned by ADMIN.
+    /// Returns the Clock object for time manipulation in tests.
+    fun setup(scenario: &mut test_scenario::Scenario): clock::Clock {
+        config::init_for_testing(test_scenario::ctx(scenario));
 
-//         // 1. Crear el objeto de cobro pagando la comisión al GlobalTreasury
-//         test_scenario::next_tx(&mut scenario, USER);
-//         {
-//             let treasury = test_scenario::take_shared<GlobalTreasury>(&scenario);
-//             // El fee configurado en el init es 10000 SUI
-//             let payment = coin::mint_for_testing<SUI>(10000, test_scenario::ctx(&mut scenario));
+        test_scenario::next_tx(scenario, ADMIN);
+        let clock = clock::create_for_testing(test_scenario::ctx(scenario));
 
-//             single_token::create_fee<COBITO>(
-//                 &treasury,
-//                 payment,
-//                 500, // Precio del servicio: 500 COBITOS
-//                 RECIPIENT,
-//                 test_scenario::ctx(&mut scenario)
-//             );
+        let treasury = test_scenario::take_shared<GlobalTreasury>(scenario);
+        let payment = coin::mint_for_testing<SUI>(CREATION_FEE, test_scenario::ctx(scenario));
 
-//             test_scenario::return_shared(treasury);
-//         };
+        single_token::create_fee<SUI>(
+            &treasury,
+            payment,
+            PRICE,
+            RECIPIENT,
+            LOCK_PERIOD,
+            &clock,
+            test_scenario::ctx(scenario)
+        );
 
-//         // 2. Verificar que el objeto SingleTokenFee<COBITO> llegó al USER
-//         test_scenario::next_tx(&mut scenario, USER);
-//         {
-//             assert!(test_scenario::has_most_recent_for_sender<SingleTokenFee<COBITO>>(&scenario), 0);
-//         };
-//         test_scenario::end(scenario);
-//     }
+        test_scenario::return_shared(treasury);
+        clock
+    }
 
-//     #[test]
-//     fun test_pay_service_fee() {
-//         let mut scenario = test_scenario::begin(ADMIN);
-//         config::init_for_testing(test_scenario::ctx(&mut scenario));
+    // === Tests ===
 
-//         // SETUP: Crear el fee object primero
-//         test_scenario::next_tx(&mut scenario, USER);
-//         {
-//             let treasury = test_scenario::take_shared<GlobalTreasury>(&scenario);
-//             let payment = coin::mint_for_testing<SUI>(10000, test_scenario::ctx(&mut scenario));
-//             single_token::create_fee<COBITO>(&treasury, payment, 500, RECIPIENT, test_scenario::ctx(&mut scenario));
-//             test_scenario::return_shared(treasury);
-//         };
+    /// Verifies that create_fee produces a SingleTokenFee with the correct
+    /// price, recipient, active status, and lock period.
+    /// Also verifies that FeeAdminCap is created and transferred to ADMIN.
+    #[test]
+    fun test_create_fee_success() {
+        let mut scenario = test_scenario::begin(ADMIN);
+        let clock = setup(&mut scenario);
 
-//         // ACCIÓN: Un cliente paga el servicio usando el objeto creado
-//         let cliente = @0x444;
-//         test_scenario::next_tx(&mut scenario, cliente);
-//         {
-//             let fee_config = test_scenario::take_from_address<SingleTokenFee<COBITO>>(&scenario, USER);
-//             let payment_tokens = coin::mint_for_testing<COBITO>(500, test_scenario::ctx(&mut scenario));
+        test_scenario::next_tx(&mut scenario, ADMIN);
+        {
+            let fee = test_scenario::take_shared<SingleTokenFee<SUI>>(&scenario);
+            let cap = test_scenario::take_from_address<FeeAdminCap>(&scenario, ADMIN);
+            let (price, recipient, active, _last_update, lock_period) = single_token::get_fee_info(&fee);
 
-//             single_token::pay_fee<COBITO>(&fee_config, payment_tokens);
+            assert!(price == PRICE, 0);
+            assert!(recipient == RECIPIENT, 1);
+            assert!(active == true, 2);
+            assert!(lock_period == LOCK_PERIOD, 3);
 
-//             test_scenario::return_to_address(USER, fee_config);
-//         };
+            test_scenario::return_shared(fee);
+            test_scenario::return_to_address(ADMIN, cap);
+        };
 
-//         // VERIFICACIÓN: El RECIPIENT recibió los 500 COBITOS
-//         test_scenario::next_tx(&mut scenario, RECIPIENT);
-//         {
-//             let coin_recibida = test_scenario::take_from_sender<coin::Coin<COBITO>>(&scenario);
-//             assert!(coin::value(&coin_recibida) == 500, 1);
-//             test_scenario::return_to_sender(&scenario, coin_recibida);
-//         };
-//         test_scenario::end(scenario);
-//     }
+        clock::destroy_for_testing(clock);
+        test_scenario::end(scenario);
+    }
 
-//     #[test]
-//     #[expected_failure(abort_code = tok_fees::single_token::EInvalidCreationFee)]
-//     fun test_fail_creation_wrong_payment() {
-//         let mut scenario = test_scenario::begin(ADMIN);
-//         config::init_for_testing(test_scenario::ctx(&mut scenario));
+    /// Verifies that create_fee aborts with EInvalidCreationFee when the
+    /// SUI payment amount does not match the protocol fee defined in GlobalTreasury.
+    #[test]
+    #[expected_failure(abort_code = single_token::EInvalidCreationFee)]
+    fun test_create_fee_wrong_payment() {
+        let mut scenario = test_scenario::begin(ADMIN);
+        config::init_for_testing(test_scenario::ctx(&mut scenario));
 
-//         test_scenario::next_tx(&mut scenario, USER);
-//         {
-//             let treasury = test_scenario::take_shared<GlobalTreasury>(&scenario);
-//             // Pagando menos de lo que pide el GlobalTreasury (10000)
-//             let payment = coin::mint_for_testing<SUI>(5000, test_scenario::ctx(&mut scenario));
+        test_scenario::next_tx(&mut scenario, ADMIN);
+        {
+            let clock = clock::create_for_testing(test_scenario::ctx(&mut scenario));
+            let treasury = test_scenario::take_shared<GlobalTreasury>(&scenario);
+            let payment = coin::mint_for_testing<SUI>(1, test_scenario::ctx(&mut scenario));
 
-//             single_token::create_fee<COBITO>(&treasury, payment, 500, RECIPIENT, test_scenario::ctx(&mut scenario));
+            single_token::create_fee<SUI>(
+                &treasury,
+                payment,
+                PRICE,
+                RECIPIENT,
+                LOCK_PERIOD,
+                &clock,
+                test_scenario::ctx(&mut scenario)
+            );
 
-//             test_scenario::return_shared(treasury);
-//         };
-//         test_scenario::end(scenario);
-//     }
+            test_scenario::return_shared(treasury);
+            clock::destroy_for_testing(clock);
+        };
+        test_scenario::end(scenario);
+    }
 
-//     #[test]
-//     fun test_admin_updates_fee_object() {
-//         let mut scenario = test_scenario::begin(ADMIN);
-//         config::init_for_testing(test_scenario::ctx(&mut scenario));
+    /// Verifies that pay_fee successfully forwards the correct payment amount
+    /// to the configured recipient address when the fee is active.
+    #[test]
+    fun test_pay_fee_success() {
+        let mut scenario = test_scenario::begin(ADMIN);
+        let clock = setup(&mut scenario);
 
-//         // USER crea su fee object
-//         test_scenario::next_tx(&mut scenario, USER);
-//         {
-//             let treasury = test_scenario::take_shared<GlobalTreasury>(&scenario);
-//             let payment = coin::mint_for_testing<SUI>(10000, test_scenario::ctx(&mut scenario));
-//             single_token::create_fee<COBITO>(&treasury, payment, 500, RECIPIENT, test_scenario::ctx(&mut scenario));
-//             test_scenario::return_shared(treasury);
-//         };
+        test_scenario::next_tx(&mut scenario, USER);
+        {
+            let fee = test_scenario::take_shared<SingleTokenFee<SUI>>(&scenario);
+            let payment = coin::mint_for_testing<SUI>(PRICE, test_scenario::ctx(&mut scenario));
 
-//         // USER actualiza su propio objeto
-//         test_scenario::next_tx(&mut scenario, USER);
-//         {
-//             let mut fee_config = test_scenario::take_from_sender<SingleTokenFee<COBITO>>(&scenario);
+            single_token::pay_fee(&fee, payment);
+
+            test_scenario::return_shared(fee);
+        };
+
+        clock::destroy_for_testing(clock);
+        test_scenario::end(scenario);
+    }
+
+    /// Verifies that pay_fee aborts with EIncorrectPayment when the payment
+    /// amount does not match the configured price.
+    #[test]
+    #[expected_failure(abort_code = single_token::EIncorrectPayment)]
+    fun test_pay_fee_wrong_amount() {
+        let mut scenario = test_scenario::begin(ADMIN);
+        let clock = setup(&mut scenario);
+
+        test_scenario::next_tx(&mut scenario, USER);
+        {
+            let fee = test_scenario::take_shared<SingleTokenFee<SUI>>(&scenario);
+            let payment = coin::mint_for_testing<SUI>(1, test_scenario::ctx(&mut scenario));
+
+            single_token::pay_fee(&fee, payment);
+
+            test_scenario::return_shared(fee);
+        };
+
+        clock::destroy_for_testing(clock);
+        test_scenario::end(scenario);
+    }
+
+    /// Verifies that pay_fee aborts with EServiceNotActive when the fee
+    /// object has been deactivated via set_active(false).
+    #[test]
+    #[expected_failure(abort_code = single_token::EServiceNotActive)]
+    fun test_pay_fee_inactive() {
+        let mut scenario = test_scenario::begin(ADMIN);
+        let clock = setup(&mut scenario);
+
+        test_scenario::next_tx(&mut scenario, ADMIN);
+        {
+            let mut fee = test_scenario::take_shared<SingleTokenFee<SUI>>(&scenario);
+            let cap = test_scenario::take_from_address<FeeAdminCap>(&scenario, ADMIN);
+            single_token::set_active(&cap, &mut fee, false);
+            test_scenario::return_shared(fee);
+            test_scenario::return_to_address(ADMIN, cap);
+        };
+
+        test_scenario::next_tx(&mut scenario, USER);
+        {
+            let fee = test_scenario::take_shared<SingleTokenFee<SUI>>(&scenario);
+            let payment = coin::mint_for_testing<SUI>(PRICE, test_scenario::ctx(&mut scenario));
+
+            single_token::pay_fee(&fee, payment);
+
+            test_scenario::return_shared(fee);
+        };
+
+        clock::destroy_for_testing(clock);
+        test_scenario::end(scenario);
+    }
+
+    /// Verifies that set_active correctly toggles the active flag on the fee object.
+    /// Tests both deactivation (false) and reactivation (true).
+    #[test]
+    fun test_set_active() {
+        let mut scenario = test_scenario::begin(ADMIN);
+        let clock = setup(&mut scenario);
+
+        test_scenario::next_tx(&mut scenario, ADMIN);
+        {
+            let mut fee = test_scenario::take_shared<SingleTokenFee<SUI>>(&scenario);
+            let cap = test_scenario::take_from_address<FeeAdminCap>(&scenario, ADMIN);
             
-//             single_token::update_price(&mut fee_config, 1000);
-//             single_token::set_active(&mut fee_config, false);
+            single_token::set_active(&cap, &mut fee, false);
+            let (_, _, active, _, _) = single_token::get_fee_info(&fee);
+            assert!(active == false, 0);
+            
+            single_token::set_active(&cap, &mut fee, true);
+            let (_, _, active_again, _, _) = single_token::get_fee_info(&fee);
+            assert!(active_again == true, 1);
 
-//             let (price, _, active) = single_token::get_fee_info(&fee_config);
-//             assert!(price == 1000, 2);
-//             assert!(active == false, 3);
+            test_scenario::return_shared(fee);
+            test_scenario::return_to_address(ADMIN, cap);
+        };
 
-//             test_scenario::return_to_sender(&scenario, fee_config);
-//         };
-//         test_scenario::end(scenario);
-//     }
-// }
+        clock::destroy_for_testing(clock);
+        test_scenario::end(scenario);
+    }
+
+    /// Verifies that update_price successfully changes the price and updates
+    /// last_update timestamp after the lock period has expired.
+    #[test]
+    fun test_update_price_success() {
+        let mut scenario = test_scenario::begin(ADMIN);
+        let mut clock = setup(&mut scenario);
+
+        test_scenario::next_tx(&mut scenario, ADMIN);
+        {
+            let mut fee = test_scenario::take_shared<SingleTokenFee<SUI>>(&scenario);
+            let cap = test_scenario::take_from_address<FeeAdminCap>(&scenario, ADMIN);
+            let (_, _, _, last_update_before, _) = single_token::get_fee_info(&fee);
+            
+            clock::increment_for_testing(&mut clock, LOCK_PERIOD);
+            single_token::update_price(&cap, &mut fee, NEW_PRICE, &clock);
+
+            let (price, _, _, last_update_after, _) = single_token::get_fee_info(&fee);
+            assert!(price == NEW_PRICE, 0);
+            assert!(last_update_after > last_update_before, 1);
+
+            test_scenario::return_shared(fee);
+            test_scenario::return_to_address(ADMIN, cap);
+        };
+
+        clock::destroy_for_testing(clock);
+        test_scenario::end(scenario);
+    }
+
+    /// Verifies that update_price aborts with EUpdateLocked when called
+    /// before the lock period has expired.
+    #[test]
+    #[expected_failure(abort_code = single_token::EUpdateLocked)]
+    fun test_update_price_locked() {
+        let mut scenario = test_scenario::begin(ADMIN);
+        let clock = setup(&mut scenario);
+
+        test_scenario::next_tx(&mut scenario, ADMIN);
+        {
+            let mut fee = test_scenario::take_shared<SingleTokenFee<SUI>>(&scenario);
+            let cap = test_scenario::take_from_address<FeeAdminCap>(&scenario, ADMIN);
+            single_token::update_price(&cap, &mut fee, NEW_PRICE, &clock);
+            test_scenario::return_shared(fee);
+            test_scenario::return_to_address(ADMIN, cap);
+        };
+
+        clock::destroy_for_testing(clock);
+        test_scenario::end(scenario);
+    }
+
+    /// Verifies that update_recipient successfully changes the recipient and
+    /// updates last_update timestamp after the lock period has expired.
+    #[test]
+    fun test_update_recipient_success() {
+        let mut scenario = test_scenario::begin(ADMIN);
+        let mut clock = setup(&mut scenario);
+
+        test_scenario::next_tx(&mut scenario, ADMIN);
+        {
+            let mut fee = test_scenario::take_shared<SingleTokenFee<SUI>>(&scenario);
+            let cap = test_scenario::take_from_address<FeeAdminCap>(&scenario, ADMIN);
+            let (_, _, _, last_update_before, _) = single_token::get_fee_info(&fee);
+            
+            clock::increment_for_testing(&mut clock, LOCK_PERIOD);
+            single_token::update_recipient(&cap, &mut fee, NEW_RECIPIENT, &clock);
+
+            let (_, recipient, _, last_update_after, _) = single_token::get_fee_info(&fee);
+            assert!(recipient == NEW_RECIPIENT, 0);
+            assert!(last_update_after > last_update_before, 1);
+
+            test_scenario::return_shared(fee);
+            test_scenario::return_to_address(ADMIN, cap);
+        };
+
+        clock::destroy_for_testing(clock);
+        test_scenario::end(scenario);
+    }
+
+    /// Verifies that update_recipient aborts with EUpdateLocked when called
+    /// before the lock period has expired.
+    #[test]
+    #[expected_failure(abort_code = single_token::EUpdateLocked)]
+    fun test_update_recipient_locked() {
+        let mut scenario = test_scenario::begin(ADMIN);
+        let clock = setup(&mut scenario);
+
+        test_scenario::next_tx(&mut scenario, ADMIN);
+        {
+            let mut fee = test_scenario::take_shared<SingleTokenFee<SUI>>(&scenario);
+            let cap = test_scenario::take_from_address<FeeAdminCap>(&scenario, ADMIN);
+            single_token::update_recipient(&cap, &mut fee, NEW_RECIPIENT, &clock);
+            test_scenario::return_shared(fee);
+            test_scenario::return_to_address(ADMIN, cap);
+        };
+
+        clock::destroy_for_testing(clock);
+        test_scenario::end(scenario);
+    }
+
+    /// Verifies that update_lock_period successfully changes the lock period
+    /// and updates last_update timestamp after the current lock period has expired.
+    #[test]
+    fun test_update_lock_period_success() {
+        let mut scenario = test_scenario::begin(ADMIN);
+        let mut clock = setup(&mut scenario);
+
+        test_scenario::next_tx(&mut scenario, ADMIN);
+        {
+            let mut fee = test_scenario::take_shared<SingleTokenFee<SUI>>(&scenario);
+            let cap = test_scenario::take_from_address<FeeAdminCap>(&scenario, ADMIN);
+            let (_, _, _, last_update_before, _) = single_token::get_fee_info(&fee);
+            
+            clock::increment_for_testing(&mut clock, LOCK_PERIOD);
+            single_token::update_lock_period(&cap, &mut fee, 0, &clock);
+
+            let (_, _, _, last_update_after, lock_period) = single_token::get_fee_info(&fee);
+            assert!(lock_period == 0, 0);
+            assert!(last_update_after > last_update_before, 1);
+
+            test_scenario::return_shared(fee);
+            test_scenario::return_to_address(ADMIN, cap);
+        };
+
+        clock::destroy_for_testing(clock);
+        test_scenario::end(scenario);
+    }
+
+    /// Verifies that update_lock_period aborts with EUpdateLocked when called
+    /// before the current lock period has expired.
+    #[test]
+    #[expected_failure(abort_code = single_token::EUpdateLocked)]
+    fun test_update_lock_period_locked() {
+        let mut scenario = test_scenario::begin(ADMIN);
+        let clock = setup(&mut scenario);
+
+        test_scenario::next_tx(&mut scenario, ADMIN);
+        {
+            let mut fee = test_scenario::take_shared<SingleTokenFee<SUI>>(&scenario);
+            let cap = test_scenario::take_from_address<FeeAdminCap>(&scenario, ADMIN);
+            single_token::update_lock_period(&cap, &mut fee, 0, &clock);
+            test_scenario::return_shared(fee);
+            test_scenario::return_to_address(ADMIN, cap);
+        };
+
+        clock::destroy_for_testing(clock);
+        test_scenario::end(scenario);
+    }
+
+    /// Verifies that delete_fee successfully destroys the fee object after
+    /// the lock period has expired. Uses has_most_recent_shared to confirm
+    /// the object no longer exists.
+    #[test]
+    fun test_delete_fee_success() {
+        let mut scenario = test_scenario::begin(ADMIN);
+        let mut clock = setup(&mut scenario);
+
+        test_scenario::next_tx(&mut scenario, ADMIN);
+        {
+            let fee = test_scenario::take_shared<SingleTokenFee<SUI>>(&scenario);
+            let cap = test_scenario::take_from_address<FeeAdminCap>(&scenario, ADMIN);
+            clock::increment_for_testing(&mut clock, LOCK_PERIOD);
+            single_token::delete_fee(&cap, fee, &clock);
+            test_scenario::return_to_address(ADMIN, cap);
+        };
+
+        test_scenario::next_tx(&mut scenario, ADMIN);
+        {
+            assert!(!test_scenario::has_most_recent_shared<SingleTokenFee<SUI>>(), 0);
+        };
+
+        clock::destroy_for_testing(clock);
+        test_scenario::end(scenario);
+    }
+
+    /// Verifies that delete_fee aborts with EUpdateLocked when called
+    /// before the lock period has expired.
+    #[test]
+    #[expected_failure(abort_code = single_token::EUpdateLocked)]
+    fun test_delete_fee_locked() {
+        let mut scenario = test_scenario::begin(ADMIN);
+        let clock = setup(&mut scenario);
+
+        test_scenario::next_tx(&mut scenario, ADMIN);
+        {
+            let fee = test_scenario::take_shared<SingleTokenFee<SUI>>(&scenario);
+            let cap = test_scenario::take_from_address<FeeAdminCap>(&scenario, ADMIN);
+            single_token::delete_fee(&cap, fee, &clock);
+            test_scenario::return_to_address(ADMIN, cap);
+        };
+
+        clock::destroy_for_testing(clock);
+        test_scenario::end(scenario);
+    }
+}

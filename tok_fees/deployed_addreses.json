@@ -1,13 +1,13 @@
 {
-  "package": "0x21dee5942c2b9198f46c846bd16c854c2d0f4b7bb13a2efb66172ac71deb40e6",
-  "global_treasury": "0x588eb27f5a886af3f62a845d99344b1b332d604289206f71eab1e764a72c45c2",
-  "admin_cap": "0xfc1fc2c7477419ff26e4b7cd3f741a7be359b61b45f38aa8246e04b7a7439da3",
-  "upgrade_cap": "0xf50216e28b27b2eda95dffadc552cb1429b5c956dee5cb1b74af9f91f942400a",
-  "issuer_fee_obj": "0xc7ad3d5ff0bdf2f9f29271716a4a367d6010698a9d98099ac0ffa5231730846e",
+  "package": "0x05029a11fbcfa5d6959a41cce21681a65ecfbb5ee57967e2626272f188c8b653",
+  "global_treasury": "0x390a335dfb7fd06869f91a43a27d64b758ce36fce8d87b5e4e5d933c04936935",
+  "admin_cap": "0x4d6e80d8617a1286f157578b3e3bbfd3c31c4a615f6536409a82ebc70ecb4a8d",
+  "upgrade_cap": "0x769df7576b0fc77be0124b0b957d5053b3bc8ef77c8d49898deccc938fe65152",
+  "issuer_fee_obj": "0x0000000000000000000000000000000000000000000000000000000000000000",
   "deployment_cost": {
-    "total_mist": 35316280,
-    "total_sui": 0.03531628,
-    "storage_cost": 35294400,
+    "total_mist": 50128680,
+    "total_sui": 0.05012868,
+    "storage_cost": 50106800,
     "computation_cost": 1000000,
     "storage_rebate": 978120
   }

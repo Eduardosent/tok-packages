@@ -1,0 +1,14 @@
+{
+  "project": "TOK_STAKING",
+  "network": "testnet",
+  "packageId": "0x4268f3d9ff7c47126184d824f52c6f41a25c21837bdeb22bc0f170d2acf60ac1",
+  "upgradeCapId": "0x947269822491579a82a07ece22dc116c6308fc1f48aa8a7207eef4c9d8ea31d7",
+  "deployer": "0x6b5ca4eecb6ee987e6eefc760cc5b59493c4258390d514999d26405e1b6b6d3e",
+  "modules": [
+    "staking"
+  ],
+  "fees": {
+    "staking_fee_obj": "0x76e73c409420757b9a4896f31b8267d0f19e0e9b023b380448483a8c2e5ea991",
+    "price_sui": 1000000000
+  }
+}
